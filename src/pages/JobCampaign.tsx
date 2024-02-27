@@ -14,23 +14,19 @@ import {
   searchJob
 } from "../services/jobdiva.services";
 
-<<<<<<< HEAD:src/pages/JobCampaign.tsx
 
 const JobCampaign: FunctionComponent = () => {
-=======
-const VoCodeJobCampaign: FunctionComponent = () => {
->>>>>>> c594a88c12c8584c563f2acbab48e57516218302:src/pages/VoCodeJobCampaign.tsx
+
   type CsvRow = { Name: string; Phone: string };
   interface Question {
     id: string;
     label: string;
   }
   async function runCampaignDataEndpoint(data: any) {
-<<<<<<< HEAD:src/pages/JobCampaign.tsx
+
     // data = editFormData(data)
     console.log("data", data)
-=======
->>>>>>> c594a88c12c8584c563f2acbab48e57516218302:src/pages/VoCodeJobCampaign.tsx
+
     try {
       const response = await runCampaign(data);
       console.log(data)
@@ -58,11 +54,10 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     }
   };
   async function testCampaignDataEndpoint(data: any) {
-<<<<<<< HEAD:src/pages/JobCampaign.tsx
+
     // data = editFormData(data)
     console.log("data", data)
-=======
->>>>>>> c594a88c12c8584c563f2acbab48e57516218302:src/pages/VoCodeJobCampaign.tsx
+
     try {
       const response = await testCampaign(data);
       console.log("data", data)
