@@ -42,9 +42,9 @@ const Company: FunctionComponent = () => {
               <div className="flex-1 flex flex-col items-start justify-start min-w-[1053px] max-w-full mq1275:min-w-full">
                 <div className="w-[461px] flex flex-col items-start justify-start gap-[10px] max-w-full">
                   <b className="relative leading-[25.27px] capitalize">
-                    Sections
+                    Company Details
                   </b>
-                  <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] max-w-full text-sm border-[0.2px] border-solid border-gray-100">
+                  {/* <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] max-w-full text-sm border-[0.2px] border-solid border-gray-100">
                     <div className="flex-1 relative leading-[25.27px] inline-block max-w-[calc(100%_-_25px)]">
                       Company
                     </div>
@@ -53,7 +53,7 @@ const Company: FunctionComponent = () => {
                       alt=""
                       src="/vector-5.svg"
                     />
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <button
@@ -69,7 +69,7 @@ const Company: FunctionComponent = () => {
               <div key={index} className="self-stretch rounded-3xs bg-whitesmoke-200 flex flex-col items-start justify-start p-2.5 box-border gap-[12px] max-w-full text-left text-lg text-gray-100 font-button-button">
                 <div className="self-stretch flex flex-row items-center justify-start max-w-full">
                   <div className="w-[1744px] flex flex-row flex-wrap items-center justify-start gap-[10px] max-w-full">
-                  <b className="w-[120px] relative leading-[25.27px] capitalize inline-block shrink-0">
+                    <b className="w-[120px] relative leading-[25.27px] capitalize inline-block shrink-0">
                       Question
                     </b>
                     <input
@@ -79,16 +79,18 @@ const Company: FunctionComponent = () => {
                       onChange={(e) => handleQuestionChange(index, e.target.value)}
                     />
                     <button
-                    className="cursor-pointer h-9 w-9 rounded-3xs bg-red flex flex-row items-center justify-center py-[5px] px-[11px] box-border text-right text-white"
-                    onClick={() => deleteQuestion(index)}
-                  >
-                    <b className="h-[27px] relative tracking-[0.33px] flex items-center">
-            X
-          </b>
-                  </button>
+                      className="cursor-pointer h-9 w-9 rounded-3xs bg-red flex flex-row items-center justify-center py-[5px] px-[11px] box-border text-right text-white"
+                      onClick={() => deleteQuestion(index)}
+                    >
+                      <b className="h-[27px] relative tracking-[0.33px] flex items-center">
+                        X
+                      </b>
+                    </button>
                   </div>
                 </div>
-                <div className="self-stretch flex flex-row items-center justify-start max-w-full">
+                <div className="self-stretch flex flex-row items-center justify-start max-w-[97%]">
+
+
                   <div className="w-[1744px] flex flex-row flex-wrap items-center justify-start gap-[10px] max-w-full">
                     <b className="w-[120px] relative leading-[25.27px] capitalize inline-block shrink-0">
                       Answer

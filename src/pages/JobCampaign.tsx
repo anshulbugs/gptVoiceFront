@@ -2,7 +2,7 @@ import { FunctionComponent } from "react";
 //import useState
 import { useState, useEffect, useRef } from "react";
 import { CustomToast } from "../components/shared-components/Toast";
-import  LoadingSpinner  from "../components/shared-components/loader";
+import LoadingSpinner from "../components/shared-components/loader";
 
 import GroupComponent from "../components/GroupComponent";
 // import { Input, Select, Radio } from 'shadcn/ui';
@@ -14,21 +14,19 @@ import {
   searchJob
 } from "../services/jobdiva.services";
 
-import { z } from "zod"
 
-const formSchema = z.object({
-  username: z.string().min(2).max(50),
-})
-const VoCodeJobCampaign: FunctionComponent = () => {
+const JobCampaign: FunctionComponent = () => {
   type CsvRow = { Name: string; Phone: string };
   interface Question {
     id: string;
     label: string;
   }
   async function runCampaignDataEndpoint(data: any) {
-    data = editFormData(data)
+    // data = editFormData(data)
+    console.log("data", data)
     try {
       const response = await runCampaign(data);
+      console.log(data)
       console.log('Campaign data written successfully:', response);
       CustomToast({
         message: response.response,
@@ -43,6 +41,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
       });
       // Handle error if needed
     }
+
   }
   const selectRef = useRef<HTMLSelectElement | null>(null); // Reference to the select element
 
@@ -52,10 +51,12 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     }
   };
   async function testCampaignDataEndpoint(data: any) {
-    data = editFormData(data)
+    // data = editFormData(data)
+    console.log("data", data)
     try {
       const response = await testCampaign(data);
-      console.log('Campaign data written successfully:', response);
+      console.log("data", data)
+      console.log('Campaign data written successfully:', data, response);
       CustomToast({
         message: response.response,
         type: response.status,
@@ -140,7 +141,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
   type FormData = {
     [key: string]: string | string[];
   };
-  const [campaignFormData, setFormData] = useState<any>({});
+  const [campaignFormData, setFormData] = useState<any>({ LLM: 'Synthflow', });
   useEffect(() => {
     // Your logic here to handle the changes in campaignFormData
     console.log('campaignFormData changed:', campaignFormData);
@@ -303,7 +304,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     setCsvType(e.target.value);
     // You can perform additional actions based on the selected value if needed
   };
-  const [jobDivaData, setJobDivaData] = useState({ City: "", JobTitle: "", JobType: "", State: "", ZipCode: "", desired_skills: "", JobDescription: "", required_skills: "" });
+  const [jobDivaData, setJobDivaData] = useState({ City: "", JobTitle: "", JobType: "", State: "", ZipCode: "", desired_skills: "", JobDescription: "", required_skills: "", HourlyRate: "" });
   const [jobDivaID, setJobDivaID] = useState("");
   const [loading, setLoading] = useState(false);
   const handleFetchClick = async () => {
@@ -312,20 +313,28 @@ const VoCodeJobCampaign: FunctionComponent = () => {
       const searchValue = jobDivaID; // Define the search value '11766307'
       const result = await searchJob(searchValue); // Call the searchJob function
       console.log('Search result:', result); // Log the result to the console
+      if (result.JobType === "Full Time/Contract") {
+        result.JobType = "Contract";
+    }
       setJobDivaData(result)
+      console.log("Hello", jobDivaData)
       const desired_skills: string = result.desired_skills;
       const desired_skills_list: string[] = desired_skills.split(",").map(skill => skill.trim());
       const required_skills: string = result.required_skills;
       const required_skills_list: string[] = required_skills.split(",").map(skill => skill.trim());
       setRequiredSkills(required_skills_list)
       setDesiredSkills(desired_skills_list)
+      setJobType(result.JobType)
       setFormData((prevData: any) => ({
         ...prevData,
         RequiredSkills: required_skills_list,
         DesiredSkills: desired_skills_list,
-        JobTitle:result.JobTitle,
+        JobTitle: result.JobTitle,
         City: result.City,
         State: result.State,
+        ZipCode: result.ZipCode,
+        HourlyRate: result.HourlyRate,
+        JobType: result.JobType
       }));
       setLoading(false);
     } catch (error) {
@@ -346,14 +355,14 @@ const VoCodeJobCampaign: FunctionComponent = () => {
   const editFormData = (formData: any) => {
     // Create a copy of the original form data
     const editedFormData = { ...formData };
-  
+
     // Check for duplicate keys
     const uniqueKeys = new Set(Object.keys(editedFormData));
     if (uniqueKeys.size !== Object.keys(editedFormData).length) {
       console.error('Duplicate keys detected in form data.');
       return formData; // Return original form data without any changes
     }
-  
+
     // Check the value of JobType and remove keys accordingly
     const jobType = editedFormData.JobType;
     if (jobType === 'Fulltime') {
@@ -362,7 +371,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
     } else if (jobType === 'Contract') {
       delete editedFormData.Salary;
     }
-  
+
     return editedFormData;
   };
   const [inputs, setInputs] = useState({
@@ -376,11 +385,11 @@ const VoCodeJobCampaign: FunctionComponent = () => {
 
   const handleNewJobClick = () => {
     // Clear all input fields
-    setJobDivaData({ City: "", JobTitle: "", JobType: "", State: "", ZipCode: "", desired_skills: "", JobDescription: "", required_skills: "" })
+    setJobDivaData({ City: "", JobTitle: "", JobType: "", State: "", ZipCode: "", desired_skills: "", JobDescription: "", required_skills: "", HourlyRate: "" })
     setRequiredSkills([])
     setDesiredSkills([])
   };
-  
+
   return (
     <div className="w-full relative bg-white overflow-hidden flex flex-col items-start justify-start pt-0 px-0 pb-[25px] box-border tracking-[normal]">
       <GroupComponent />
@@ -422,7 +431,8 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   type="text"
                   onChange={(e) => handleJobDivaIDChange(e, JobIDQuestion?.id || "")}
                   tabIndex={3}
-                  // value={inputs.input1}
+                  
+                // value={inputs.input1}
                 />
               </div>
             </div>
@@ -434,8 +444,8 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 {/* Display loader if loading is true */}
               </div>
             </button>
-            {loading && 
-      <LoadingSpinner />}
+            {loading &&
+              <LoadingSpinner />}
 
             <div className="w-1/4 flex flex-col items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">Job Template
@@ -488,19 +498,22 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 <span className="text-red-500">*</span></b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
-                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block max-w-full"
+                  className="w-full [border:none] [outline:none] font-button-button text-sm h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block max-w-full"
                   placeholder={jobTitleQuestion?.label}
                   type="text"
                   value={jobDivaData.JobTitle}
                   onChange={(e) => handleInputChange(e, jobTitleQuestion?.id || "")}
                   tabIndex={2}
+                  style={{ backgroundColor: jobDivaData.JobTitle ? 'transparent' : 'lightyellow' }}
                 />
+
               </div>
             </div>
 
             <div className="w-1/4 flex flex-col items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">Job Type
-                <span className="text-red-500">*</span></b>
+                <span className="text-red-500">*</span>
+              </b>
               <div className="self-stretch flex flex-row items-center justify-start py-0 pr-px pl-0 box-border gap-[10px] max-w-full text-base text-darkslategray-200 mq900:flex-wrap">
                 <div className="flex flex-row items-center justify-start gap-[5.81px]">
                   <input
@@ -514,17 +527,16 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   <div className="relative leading-[25.27px] capitalize font-medium">
                     Fulltime
                   </div>
-                  {jobType === 'Full Time' && (
-                    <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 min-w-[75px] border-[0.2px] border-solid border-gray-100">
-                      <input
-                        className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[80px]"
-                        placeholder={salaryQuestion?.label}
-                        type="text"
-                        onChange={(e) => handleInputChange(e, salaryQuestion?.id || "")}
-                        tabIndex={5}
-                      />
-                    </div>
-                  )}
+                  <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 min-w-[75px] border-[0.2px] border-solid border-gray-100">
+                    <input
+                      className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[180px]"
+                      placeholder={salaryQuestion?.label}
+                      type="text"
+                      onChange={(e) => handleInputChange(e, salaryQuestion?.id || "")}
+                      tabIndex={5}
+                      disabled={jobType !== 'Full Time'} // Disable if jobType is not 'Full Time'
+                    />
+                  </div>
                 </div>
                 <div className="flex-1 flex flex-row  items-start justify-center min-w-[224px] max-w-full text-gray-200">
                   <div className="flex-1 flex flex-row items-center justify-start py-0 pr-px pl-0 box-border gap-[5.81px] items-center max-w-full mq450:flex-wrap">
@@ -541,32 +553,34 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                         Contract
                       </div>
                     </div>
-                    {jobType === 'Contract' && (
-                      <>
-                        <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5  min-w-[75px] w-[120px] border-[0.2px] border-solid border-gray-100 gap-[10px]">
-                          <input
-                            className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block "
-                            placeholder={hourlyRateQuestion?.label}
-                            type="text"
-                            onChange={(e) => handleInputChange(e, hourlyRateQuestion?.id || "")}
-                            tabIndex={7}
-                          />
-                        </div>
-                        <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 w-[120px] min-w-[75px] text-sm text-gray-100 border-[0.2px] border-solid border-gray-100">
-                          <input
-                            className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[58px]"
-                            placeholder={durationQuestion?.label}
-                            type="text"
-                            onChange={(e) => handleInputChange(e, durationQuestion?.id || "")}
-                            tabIndex={8}
-                          />
-                        </div>
-                      </>
-                    )}
+                    <>
+                      <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5  min-w-[150px] w-[120px] border-[0.2px] border-solid border-gray-100 gap-[10px]">
+                        <input
+                          className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block "
+                          placeholder={hourlyRateQuestion?.label}
+                          type="text"
+                          onChange={(e) => handleInputChange(e, hourlyRateQuestion?.id || "")}
+                          value={jobDivaData.HourlyRate}
+                          tabIndex={7}
+                          disabled={jobType !== 'Contract'} // Disable if jobType is not 'Contract'
+                        />
+                      </div>
+                      <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 w-[120px] min-w-[150px] text-sm text-gray-100 border-[0.2px] border-solid border-gray-100">
+                        <input
+                          className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[58px]"
+                          placeholder={durationQuestion?.label}
+                          type="text"
+                          onChange={(e) => handleInputChange(e, durationQuestion?.id || "")}
+                          tabIndex={8}
+                          disabled={jobType !== 'Contract'} // Disable if jobType is not 'Contract'
+                        />
+                      </div>
+                    </>
                   </div>
                 </div>
               </div>
             </div>
+
 
           </div>
           <div className="self-stretch flex flex-row flex-wrap items-end justify-start py-0 pr-0.5 pl-0 box-border gap-[20px] max-w-full text-left text-lg text-gray-100 font-button-button">
@@ -577,31 +591,35 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                 <div className="flex-1 flex flex-row items-center justify-start w-3/10">
                   <div className="flex-1 rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 border-[0.2px] border-solid border-gray-100">
                     <input
-                      className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[171px]"
+                      className="w-full [border:none] [outline:none] font-button-button text-sm h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[171px]"
                       placeholder={cityQuestion?.label}
                       value={jobDivaData.City}
                       type="text"
                       onChange={(e) => handleInputChange(e, cityQuestion?.id || "")}
+                      style={{ backgroundColor: jobDivaData.City ? 'transparent' : 'lightyellow' }}
                       tabIndex={9}
                     />
                   </div>
                 </div>
                 <div className="flex-[0.933] rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 w-3/10 border-[0.2px] border-solid border-gray-100 mq450:flex-1">
                   <input
-                    className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block "
+                    className="w-full [border:none] [outline:none] font-button-button text-sm h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block "
                     placeholder={stateQuestion?.label}
                     type="text"
                     value={jobDivaData.State}
                     onChange={(e) => handleInputChange(e, stateQuestion?.id || "")}
+                    style={{ backgroundColor: jobDivaData.State ? 'transparent' : 'lightyellow' }}
                     tabIndex={10}
                   />
                 </div>
                 <div className="flex-[0.933] rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 w-3/10 border-[0.2px] border-solid border-gray-100 mq450:flex-1">
                   <input
-                    className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block "
+                    className="w-full [border:none] [outline:none] font-button-button text-sm h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block "
                     placeholder={zipCodeQuestion?.label}
                     type="text"
+                    value={jobDivaData.ZipCode}
                     onChange={(e) => handleInputChange(e, zipCodeQuestion?.id || "")}
+                    style={{ backgroundColor: jobDivaData.ZipCode ? 'transparent' : 'lightyellow' }}
                     tabIndex={11}
                   />
                 </div>
@@ -669,7 +687,7 @@ const VoCodeJobCampaign: FunctionComponent = () => {
                   onChange={(e) => handleSelectChange(e, llmQuestion?.id || "")}
                 >
                   <option value="" disabled selected hidden>Select LLM</option>
-                  <option value="Synthflow" className="text-lg">Synthflow</option>
+                  <option value="Synthflow" className="text-lg" selected>Synthflow</option>
                   <option value="Vodex" className="text-lg">Vodex</option>
                   {/* <option value="Vocode" className="text-lg">VoCode</option> */}
 
@@ -698,10 +716,11 @@ const VoCodeJobCampaign: FunctionComponent = () => {
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 min-h-[222px] max-w-full text-sm border-[0.2px] border-solid border-gray-100" style={{ wordWrap: 'break-word' }}>
                 <div className="flex-1 relative leading-[25.27px]">
                   <textarea
-                    className="block w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] relative leading-[25.27px] text-gray-100 text-left min-w-[171px] resize-none"
+                    className="block w-full [border:none] [outline:none] font-button-button text-sm relative leading-[25.27px] text-gray-100 text-left min-w-[171px] resize-none"
                     placeholder={jobDescriptionQuestion?.label}
                     value={jobDivaData.JobDescription}
                     rows={10} // Set the number of visible lines
+                    style={{ backgroundColor: jobDivaData.JobDescription ? 'transparent' : 'lightyellow' }}
                     onChange={(e) => handleTextareaChange(e, jobDescriptionQuestion?.id || "")} // Use the new function
                   />
                 </div>
@@ -714,30 +733,30 @@ const VoCodeJobCampaign: FunctionComponent = () => {
             <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">Required Skills
                 <span className="text-red-500">*</span></b>
-                <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
-  <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap flex-wrap ">
-    {requiredSkills.map((skill, index) => (
-      <div key={index} className="flex flex-row items-center gap-[2.91px] rounded-[5.26px] bg-white mb-2.5">
-        <div className="relative text-sm leading-[15.27px] font-button-button text-gray-100 text-left">{skill}</div>
-        <img
-          className="h-[18.1px] w-[18.1px] cursor-pointer"
-          alt=""
-          src="/icbaselineclose.svg"
-          onClick={() => handleSkillRemove(index)}
-        />
-      </div>
-    ))}
-    <input
-      className="w-[calc(100%_-_38.1px)] [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[15.27px] text-gray-100 text-left inline-block min-w-[10px]"
-      placeholder="Type a skill"
-      type="text"
-      value={requiredskillInput}
-      onChange={(e) => setRequiredSkillInput(e.target.value)}
-      onKeyDown={handleKeyDown}
-      tabIndex={14}
-    />
-  </div>
-</div>
+              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100" style={{ backgroundColor: requiredSkills ? 'transparent' : 'lightyellow' }}>
+                <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap flex-wrap ">
+                  {requiredSkills.map((skill, index) => (
+                    <div key={index} className="flex flex-row items-center gap-[2.91px] rounded-[5.26px] bg-white mb-2.5">
+                      <div className="relative text-sm leading-[15.27px] font-button-button text-gray-100 text-left">{skill}</div>
+                      <img
+                        className="h-[18.1px] w-[18.1px] cursor-pointer"
+                        alt=""
+                        src="/icbaselineclose.svg"
+                        onClick={() => handleSkillRemove(index)}
+                      />
+                    </div>
+                  ))}
+                  <input
+                    className="w-[calc(100%_-_38.1px)] [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[15.27px] text-gray-100 text-left inline-block min-w-[10px]"
+                    placeholder="Type a skill"
+                    type="text"
+                    value={requiredskillInput}
+                    onChange={(e) => setRequiredSkillInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    tabIndex={14}
+                  />
+                </div>
+              </div>
 
             </div>
           </div>
@@ -1133,4 +1152,4 @@ const VoCodeJobCampaign: FunctionComponent = () => {
   );
 };
 
-export default VoCodeJobCampaign;
+export default JobCampaign;

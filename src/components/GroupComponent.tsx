@@ -1,8 +1,8 @@
 import { FunctionComponent, useMemo, type CSSProperties } from "react";
-import VoCodeJobCampaign from "../pages/VoCodeJobCampaign";
+import JobCampaign from "../pages/JobCampaign";
 import Company from "../pages/Company";
 import { Link } from 'react-router-dom';
-import VoCodeRecruiterProfile from "../pages/VoCodeRecruiterProfile";
+import RecruiterProfile from "../pages/RecruiterProfile";
 import React, { useState, useEffect } from 'react';
 export type GroupComponentType = {
   /** Style props */
@@ -144,7 +144,7 @@ const GroupComponent: FunctionComponent<GroupComponentType> = ({
       </div>
       <nav className="flex items-center gap-4 text-dark mt-4">
   <Link to="/company" className="cursor-pointer bg-darkslategray-200 w-[220px] h-[50px] rounded-[5.08px] flex items-center justify-center hover:bg-deepskyblue-200 font-bold text-white">Company</Link>
-  <Link to="/vocoderecruiterprofile" className="cursor-pointer bg-darkslategray-200 w-[220px] h-[50px] rounded-[5.08px] flex items-center justify-center hover:bg-deepskyblue-200 font-bold text-white">Recruiters</Link>
+  <Link to="/recruiterprofile" className="cursor-pointer bg-darkslategray-200 w-[220px] h-[50px] rounded-[5.08px] flex items-center justify-center hover:bg-deepskyblue-200 font-bold text-white">Recruiters</Link>
   <Link to="/" className="cursor-pointer bg-darkslategray-200 w-[220px] h-[50px] rounded-[5.08px] flex items-center justify-center hover:bg-deepskyblue-200 font-bold text-white">Campaign</Link>
 </nav>
     </header>

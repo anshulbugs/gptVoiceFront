@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { Routes, Route, useNavigationType, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import VoCodeJobCampaign from "./pages/VoCodeJobCampaign";
+import JobCampaign from "./pages/JobCampaign";
 import Company from "./pages/Company";
-import VoCodeRecruiterProfile from "./pages/VoCodeRecruiterProfile";
+import RecruiterProfile from "./pages/RecruiterProfile";
 
 function App() {
   const action = useNavigationType();
@@ -26,11 +26,11 @@ function App() {
         title = "";
         metaDescription = "";
         break;
-      case "/vocodejobcampaign":
+      case "/jobcampaign":
         title = "";
         metaDescription = "";
         break;
-      case "/vocoderecruiterprofile":
+      case "/recruiterprofile":
         title = "";
         metaDescription = "";
         break;
@@ -57,11 +57,11 @@ function App() {
 
       {/* Define Routes */}
       <Routes>
-        <Route path="/" element={<VoCodeJobCampaign />} />
+        <Route path="/" element={<JobCampaign />} />
         <Route path="/company" element={<Company />} />
         <Route
-          path="/vocoderecruiterprofile"
-          element={<VoCodeRecruiterProfile />}
+          path="/recruiterprofile"
+          element={<RecruiterProfile />}
         />
       </Routes>
     </div>
