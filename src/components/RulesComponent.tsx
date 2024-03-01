@@ -1,10 +1,90 @@
-import React, { FunctionComponent, useState } from "react";
-
+import React, { FunctionComponent, useState, useEffect } from "react";
+import { CustomSpinner } from "./shared-components/Spinner";
+import {
+  getRules,manageRules
+} from "../services/rules.services";
 const RulesComponent: FunctionComponent = () => {
   const [rules, setRules] = useState<{ rule: string }[]>([
     { rule: "" }
   ]);
+  const [rulesApi, setRulesApi] = useState<{ id: string; rule_text: string }[]>([
+    { id: "", rule_text: "" }
+  ]);
+  
+  const [isSpinnerVisible, setIsSpinnerVisible] = useState(false);
+  interface Rule {
+    id: string;
+    rule_text: string;
+  }
+  async function gettingRules() {
+    try {
+      setIsSpinnerVisible(true);
+      // Get rules
+      const rulesData = await getRules();
+      setIsSpinnerVisible(false);
+      const rules: Rule[] = rulesData.rules;
+      console.log('Rules:', rules);
+      console.log('Rules:', typeof(rules));
+      setRulesApi(rules)
+      
+      const formattedRules = rules.map(rule => ({ rule: rule.rule_text }));
+        setRules(formattedRules);
 
+    } catch (error) {
+      console.error('Error:', error);
+      setIsSpinnerVisible(false);
+    }
+  }
+  useEffect(() => {
+    gettingRules();
+  }, []);
+  useEffect(() => {
+    console.log('RulesApi:', rulesApi);
+  }, rulesApi);
+  useEffect(() => {
+    console.log('Rules:', rules);
+  }, rules);
+
+  interface VariableRule {
+    rule: string;
+}
+  function getIdsWithMissingRules(rulesApi: Rule[], variableRules: VariableRule[]): string[] {
+    const missingRulesIds: string[] = [];
+    
+    rulesApi.forEach(apiRule => {
+        const apiRuleText = apiRule.rule_text;
+        const isRuleMissing = !variableRules.some(variableRule => variableRule.rule === apiRuleText);
+        
+        if (isRuleMissing) {
+            missingRulesIds.push(apiRule.id);
+        }
+    });
+    
+    return missingRulesIds;
+}
+const missingIds: string[] = getIdsWithMissingRules(rulesApi, rules);
+useEffect(() => {
+  console.log("Missing IDs:", missingIds);
+}, missingIds);
+
+function findExtraText(variableRules: VariableRule[], rulesApi: Rule[]): string[] {
+  const extraText: string[] = [];
+  
+  variableRules.forEach(variableRule => {
+      const variableRuleText = variableRule.rule;
+      const isTextExtra = !rulesApi.some(apiRule => apiRule.rule_text === variableRuleText);
+      
+      if (isTextExtra) {
+          extraText.push(variableRuleText);
+      }
+  });
+  
+  return extraText;
+}
+const extraRules: string[] = findExtraText( rules,rulesApi);
+useEffect(() => {
+  console.log("extraRules:", extraRules);
+}, extraRules);
   const addRule = () => {
     setRules([...rules, { rule: "" }]);
   };
@@ -13,6 +93,9 @@ const RulesComponent: FunctionComponent = () => {
     const newRules = [...rules];
     newRules[index].rule = value;
     setRules(newRules);
+    console.log("here",rules)
+    const extraRules: string[] = getIdsWithMissingRules(rulesApi, rules);
+    console.log("extraRules:", extraRules);
   };
 
 
@@ -23,12 +106,28 @@ const RulesComponent: FunctionComponent = () => {
     setRules(newRules);
   };
 
+  function onSave(callback: () => void) {
+    const missingIds = getIdsWithMissingRules(rulesApi, rules);
+    
+    if (missingIds.length > 0) {
+        manageRules('DELETE', {"rule_ids": missingIds});
+    }
+
+    const extraRules: string[] = findExtraText(rules, rulesApi);
+    if (extraRules.length > 0) {
+        manageRules('POST', {"rule_texts": extraRules});
+    }
+    
+    // Call the callback function after both operations have finished
+    callback();
+}
+
   return (
 
 
 
     <div className="self-stretch bg-white box-border flex flex-col items-end justify-start py-5 pr-[49px] pl-[51px] gap-[20px] max-w-full border-[0.5px] border-solid border-gainsboro mq1275:pl-[25px] mq1275:pr-6 mq1275:box-border">
-
+      <CustomSpinner isVisible={isSpinnerVisible} />
 
 
       <button
@@ -72,7 +171,11 @@ const RulesComponent: FunctionComponent = () => {
             Close
           </b>
         </button>
-        <button className="cursor-pointer [border:none] py-[10px] px-[16px] bg-forestgreen-200 h-[47.1px] flex-1 rounded-[5.01px] flex flex-row items-center justify-center box-border hover:bg-limegreen">
+        <button className="cursor-pointer [border:none] py-[10px] px-[16px] bg-forestgreen-200 h-[47.1px] flex-1 rounded-[5.01px] flex flex-row items-center justify-center box-border hover:bg-limegreen" onClick={() => onSave(() => {
+    // This callback function will be called after onSave has completed its operations
+    // You can put your component refresh logic here
+    console.log("Component refreshed after onSave operations completed.");
+})} >
           <b className="relative text-base-2 tracking-[1.25px] leading-[16.04px] font-button-button text-white text-left">
             Save
           </b>

@@ -13,8 +13,11 @@ import {
 import {
   searchJob
 } from "../services/jobdiva.services";
+import {
+  getClients
+} from "../services/clients.services";
 
-
+import { CustomSpinner } from "../components/shared-components/Spinner";
 const JobCampaign: FunctionComponent = () => {
 
   type CsvRow = { Name: string; Phone: string };
@@ -146,7 +149,15 @@ const JobCampaign: FunctionComponent = () => {
   type FormData = {
     [key: string]: string | string[];
   };
-  const [campaignFormData, setFormData] = useState<any>({ LLM: 'Synthflow', });
+  const [campaignFormData, setFormData] = useState<any>({
+    LLM: 'Synthflow', RecruiterName: "Taj Haslani",
+    RecruiterPhoneNumber: "+1731123456",
+    RecruiterEmail: "taj@aptask.com",
+    Link: "abc.com",
+    VoiceGender: "Male",
+    TTSProvider: "ElevenLabs",
+    AvailableVoices: "Charlie",
+  });
   useEffect(() => {
     // Your logic here to handle the changes in campaignFormData
     console.log('campaignFormData changed:', campaignFormData);
@@ -158,6 +169,10 @@ const JobCampaign: FunctionComponent = () => {
     if (['JobTitle', 'City', 'State', 'ZipCode', 'JobDescription'].includes(id)) {
       // Update JobDivaData only for specified fields
       setJobDivaData((prevData: any) => ({ ...prevData, [id]: value }));
+    }
+    if (['RecruiterName', 'RecruiterPhoneNumber', 'RecruiterEmail', 'Link'].includes(id)) {
+      // Update JobDivaData only for specified fields
+      setCallingDetails((prevData: any) => ({ ...prevData, [id]: value }));
     }
   };
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>, id: string) => {
@@ -174,18 +189,48 @@ const JobCampaign: FunctionComponent = () => {
     // Update the campaignFormData with id "JobType" and the selected value
     setFormData((prevData: any) => ({ ...prevData, JobType: value }));
   };
+  const [selected, setSelected] = useState(false);
+  const [clientName, setClientName] = useState('');
+
+  const [clientData, setClientData] = useState('');
+  //use useEffect on clientData
+
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>, id: string) => {
     const { value } = e.target;
-    setFormData((prevData: any) => ({ ...prevData, [id]: value }));
+    
+    
+    if (['ClientName'].includes(id)) {
+      setClientName(value)
+      
+    }
+    else{
+      setFormData((prevData: any) => ({ ...prevData, [id]: value }));
+    }
+    
+    setSelected(e.target.value !== "");
   };
-  const [remoteHybrid, setRemoteHybrid] = useState('');
+
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
     const { value } = e.target;
     setFormData((prevData: any) => ({ ...prevData, [id]: value }));
+
   };
+  const [anySelected, setAnySelected] = useState(false);
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
     const { value, checked } = e.target;
+    if (['clientData'].includes(id)) {
+      setFormData((prevData: any) => ({ ...prevData, ["clientName"]: clientName }));
+      const selectedClientName = clientName;
+      const selectedClient = clients.find(client => client.client_name === selectedClientName);
+      if (selectedClient) {
+        const clientData = selectedClient.client_data;
+        setClientData(clientData)
+        setFormData((prevData: any) => ({ ...prevData, ["clientData"]: clientData }));
+        setClientName("")  
+      }
+    }
+    else{
     setFormData((prevData: any) => {
       // Get the existing array of selected values or initialize it as an empty array
       const selectedValues = prevData[id] || [];
@@ -194,10 +239,12 @@ const JobCampaign: FunctionComponent = () => {
       const updatedValues = checked
         ? [...selectedValues, value] // Add the value if checkbox is checked
         : selectedValues.filter((val: any) => val !== value); // Remove the value if checkbox is unchecked
-
+      setAnySelected(e.target.checked);
       // Update the form data with the new array of selected values
       return { ...prevData, [id]: updatedValues };
     });
+  }
+    
   };
 
   const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
@@ -274,7 +321,7 @@ const JobCampaign: FunctionComponent = () => {
       } else if (csvType === "JDCSV") {
         parsedData = parseJDCSV(rows);
       }
-
+      console.log("parsedData", parsedData)
       // Set the parsed data in the campaignFormData state
       setFormData((prevData: any) => ({
         ...prevData,
@@ -320,7 +367,7 @@ const JobCampaign: FunctionComponent = () => {
       console.log('Search result:', result); // Log the result to the console
       if (result.JobType === "Full Time/Contract") {
         result.JobType = "Contract";
-    }
+      }
       setJobDivaData(result)
       console.log("Hello", jobDivaData)
       const desired_skills: string = result.desired_skills;
@@ -394,9 +441,47 @@ const JobCampaign: FunctionComponent = () => {
     setRequiredSkills([])
     setDesiredSkills([])
   };
+  const [callingDetails, setCallingDetails] = useState({
+    RecruiterName: "Taj",
+    RecruiterPhoneNumber: "+1732800131",
+    RecruiterEmail: "taj@aptask.com",
+    Link: "abc.com",
+    VoiceGender: "Male",
+    TTSProvider: "ElevenLabs",
+    AvailableVoices: "Charlie",
+    EmailTemplate: "" // Add your email template here
+  });
 
+  const [clients, setClients] = useState<{ id: string; client_data: string; client_name: string }[]>([
+    { id: "", client_data: "", client_name: "" }]);
+  const [isSpinnerVisible, setIsSpinnerVisible] = useState(false);
+  interface client {
+    id: string;
+    client_data: string;
+    client_name: string;
+
+  }
+  async function gettingClients() {
+    try {
+      setIsSpinnerVisible(true);
+      // Get rules
+      const clientsData = await getClients();
+      setIsSpinnerVisible(false);
+      const clients: client[] = clientsData.clients;
+      console.log('clients:', clients);
+      setClients(clients);
+
+    } catch (error) {
+      console.error('Error:', error);
+      setIsSpinnerVisible(false);
+    }
+  }
+  useEffect(() => {
+    gettingClients();
+  }, []);
   return (
     <div className="w-full relative bg-white overflow-hidden flex flex-col items-start justify-start pt-0 px-0 pb-[25px] box-border tracking-[normal]">
+      <CustomSpinner isVisible={isSpinnerVisible} />
       <GroupComponent />
       <main className="self-stretch flex flex-col items-start justify-start max-w-full">
         <section className="self-stretch bg-white box-border flex flex-col items-start justify-start py-5 pr-[51px] pl-[49px] gap-[8px] max-w-full text-left text-lg text-gray-100 font-button-button border-[0.5px] border-solid border-gainsboro-100 mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
@@ -409,7 +494,7 @@ const JobCampaign: FunctionComponent = () => {
                   onChange={(e) => handleSelectChange(e, atsCrmQuestion?.id || "")} // Handle selection change
                 >
                   <option value="" disabled selected hidden>Select </option>
-                  <option className="text-lg" value="JobDiva">JobDiva</option>
+                  <option className="text-lg" value="JobDiva" selected>JobDiva</option>
                   <option className="text-lg" value="option 2">option 2</option>
                   <option className="text-lg" value="option 3">option 3</option>
                 </select>
@@ -436,7 +521,9 @@ const JobCampaign: FunctionComponent = () => {
                   type="text"
                   onChange={(e) => handleJobDivaIDChange(e, JobIDQuestion?.id || "")}
                   tabIndex={3}
-                  
+                  style={{ backgroundColor: jobDivaID ? 'transparent' : 'lightyellow' }}
+
+
                 // value={inputs.input1}
                 />
               </div>
@@ -634,7 +721,8 @@ const JobCampaign: FunctionComponent = () => {
               <b className="relative leading-[25.27px] capitalize">Seniority level</b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] whitespace-nowrap text-sm border-[0.2px] border-solid border-gray-100">
                 <select
-                  className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
+                  className={`flex-1 relative leading-[25.27px] text-gray-100 text-left ${selected ? "bg-transparent" : "bg-yellow-50"
+                    } appearance-none outline-none border-none`}
                   onChange={(e) => handleSelectChange(e, seniorityLevelQuestion?.id || "")} // Handle selection change
                 >
                   <option value="" disabled selected hidden>Select </option>
@@ -666,7 +754,7 @@ const JobCampaign: FunctionComponent = () => {
                   onChange={(e) => handleCheckboxChange(e, remoteHybridQuestion?.id || "")}
                   tabIndex={12}
                 />
-                <div className="relative leading-[25.27px] capitalize font-medium">
+                <div className={`relative leading-[25.27px] capitalize font-medium ${anySelected ? "bg-transparent" : "bg-yellow-50"}`}>
                   Remote
                 </div>
               </label>
@@ -680,7 +768,7 @@ const JobCampaign: FunctionComponent = () => {
                   tabIndex={13}
                 />
 
-                <div className="relative leading-[25.27px] capitalize font-medium">Hybrid</div>
+                <div className={`relative leading-[25.27px] capitalize font-medium ${anySelected ? "bg-transparent" : "bg-yellow-50"}`}>Hybrid</div>
               </label>
             </div>
             <div className="w-1/6 flex flex-col items-start justify-start gap-[10px] min-w-[178px]">
@@ -738,7 +826,7 @@ const JobCampaign: FunctionComponent = () => {
             <div className="flex-1 flex flex-col items-start justify-start gap-[10px] max-w-full">
               <b className="relative leading-[25.27px] capitalize">Required Skills
                 <span className="text-red-500">*</span></b>
-              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100" style={{ backgroundColor: requiredSkills ? 'transparent' : 'lightyellow' }}>
+              <div className="self-stretch rounded-[5.26px] bg-whitesmoke-300 box-border overflow-hidden flex flex-row items-start justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100" style={{ backgroundColor: requiredSkills ? 'bg-whitesmoke-300' : 'lightyellow' }}>
                 <div className="flex-1 flex flex-row items-center justify-start gap-[5.81px] max-w-full mq450:flex-wrap flex-wrap ">
                   {requiredSkills.map((skill, index) => (
                     <div key={index} className="flex flex-row items-center gap-[2.91px] rounded-[5.26px] bg-white mb-2.5">
@@ -837,6 +925,7 @@ const JobCampaign: FunctionComponent = () => {
                   type="text"
                   onChange={(e) => handleInputChange(e, recruiterNameQuestion?.id || "")}
                   tabIndex={17}
+                  value={callingDetails.RecruiterName}
                 />
               </div>
             </div>
@@ -849,6 +938,7 @@ const JobCampaign: FunctionComponent = () => {
                   type="text"
                   onChange={(e) => handleInputChange(e, recruiterPhoneNumberQuestion?.id || "")}
                   tabIndex={18}
+                  value={callingDetails.RecruiterPhoneNumber}
                 />
               </div>
             </div>
@@ -863,6 +953,7 @@ const JobCampaign: FunctionComponent = () => {
                   type="text"
                   onChange={(e) => handleInputChange(e, recruiterEmailQuestion?.id || "")}
                   tabIndex={19}
+                  value={callingDetails.RecruiterEmail}
                 />
               </div>
             </div>
@@ -870,11 +961,12 @@ const JobCampaign: FunctionComponent = () => {
               <b className="relative leading-[25.27px] capitalize">{linkQuestion?.label}</b>
               <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 box-border overflow-hidden flex flex-row items-center justify-center p-2.5 max-w-full border-[0.2px] border-solid border-gray-100">
                 <input
-                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] capitalize text-gray-100 text-left inline-block min-w-[250px] max-w-full"
+                  className="w-full [border:none] [outline:none] font-button-button text-sm bg-[transparent] h-[26px] flex-1 relative leading-[25.27px] text-gray-100 text-left inline-block min-w-[250px] max-w-full"
                   placeholder={linkQuestion?.label}
                   type="text"
                   onChange={(e) => handleInputChange(e, linkQuestion?.id || "")}
                   tabIndex={20}
+                  value={callingDetails.Link}
                 />
               </div>
             </div>
@@ -896,6 +988,7 @@ const JobCampaign: FunctionComponent = () => {
                       value="Male" // Set value attribute to "Male"
                       onChange={(e) => handleRadioChange(e, voiceGenderQuestion?.id || "")}
                       tabIndex={21}
+                      checked
                     />
                     <div className="relative leading-[25.27px] capitalize font-medium">
                       Male
@@ -914,7 +1007,6 @@ const JobCampaign: FunctionComponent = () => {
                       Female
                     </div>
                   </div>
-
                 </div>
               </div>
               <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/5 max-w-full">
@@ -925,8 +1017,8 @@ const JobCampaign: FunctionComponent = () => {
                     onChange={(e) => handleSelectChange(e, voiceQuestion?.id || "")} // Handle selection change
                     tabIndex={23}
                   >
-                    <option value="" disabled selected hidden>Select</option>
-                    <option className="text-lg" value="11labs">11labs</option>
+                    <option value="" disabled hidden>Select</option>
+                    <option className="text-lg" selected value="Elevenlabs">Elevenlabs</option>
                     <option className="text-lg" value="Deepgram">Deepgram</option>
                   </select>
                   <div className="relative z-10">
@@ -951,8 +1043,8 @@ const JobCampaign: FunctionComponent = () => {
                     onChange={(e) => handleSelectChange(e, voiceQuestion?.id || "")} // Handle selection change
                     tabIndex={23}
                   >
-                    <option value="" disabled selected hidden>Select</option>
-                    <option className="text-lg" value="Voice1">Voice1</option>
+                    <option value="" disabled hidden>Select</option>
+                    <option className="text-lg" selected value="Daniel">Daniel</option>
                     <option className="text-lg" value="Voice2">Voice2</option>
                     <option className="text-lg" value="Voice3">Voice3</option>
                   </select>
@@ -1032,6 +1124,46 @@ const JobCampaign: FunctionComponent = () => {
         <section className="self-stretch bg-white box-border flex flex-col items-start justify-start py-2.5 pr-[51px] pl-[49px] max-w-full border-[0.5px] border-solid border-gainsboro-100 mq1275:pl-6 mq1275:pr-[25px] mq1275:box-border">
           <footer className="self-stretch flex flex-row flex-wrap items-end justify-start py-0 pr-px pl-0 box-border gap-[20px] max-w-full text-left text-lg text-gray-100 font-button-button">
             <div className="flex-1 flex flex-row items-end justify-start py-0 pr-px pl-0 box-border gap-[20px] max-w-full mq1275:min-w-full mq1600:flex-wrap">
+            <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/8 max-w-full">
+                <b className="relative leading-[25.27px] capitalize">Client name</b>
+                <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
+                  <select
+                    className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
+                    onChange={(e) => handleSelectChange(e, clientNameQuestion?.id || "")} // Handle selection change
+                  >
+                    <option value="" disabled selected hidden>Select</option>
+                    {clients.map((client, index) => (
+                      <option key={index} value={client.client_name}>{client.client_name}</option>
+                    ))}
+                  </select>
+                  <div className="relative z-10">
+                    <div
+                      className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+                      onClick={handleDropdownClick} // Handle click on arrow image
+                    >
+                      <img
+                        className="h-[6.6px] w-[12.1px] relative cursor-pointer"
+                        alt=""
+                        src="/vector-8.svg"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {clientName && (
+              <label className="flex flex-row items-center justify-start gap-[10px]">
+                <input
+                  type="checkbox"
+                  name="clientData"
+                  className="h-[23px] w-[23px] relative"
+                  value={clientData}
+                  onChange={(e) => handleCheckboxChange(e, "clientData")}
+                  tabIndex={12}
+                />
+                <div className="relative leading-[25.27px] capitalize font-medium bg-transparent ">
+                  Include Client Data
+                </div>
+              </label>)}
               <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/8 max-w-full">
                 <b className="relative leading-[25.27px] capitalize">{testNameQuestion?.label} <span className="text-red-500">*</span></b>
                 <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 border-[0.2px] border-solid border-gray-100">
@@ -1107,32 +1239,7 @@ const JobCampaign: FunctionComponent = () => {
                 </div>
               </div>
 
-              <div className="flex-1 flex flex-col items-start justify-start gap-[10px] w-1/8 max-w-full">
-                <b className="relative leading-[25.27px] capitalize">Client name</b>
-                <div className="self-stretch rounded-[5.26px] bg-whitesmoke-400 overflow-hidden flex flex-row items-center justify-center p-2.5 gap-[2.91px] text-sm border-[0.2px] border-solid border-gray-100">
-                  <select
-                    className="flex-1 relative leading-[25.27px]  text-gray-100 text-left bg-transparent appearance-none outline-none border-none"
-                    onChange={(e) => handleSelectChange(e, clientNameQuestion?.id || "")} // Handle selection change
-                  >
-                    <option value="" disabled selected hidden>Select</option>
-                    <option className="text-lg" value="client1">client 1</option>
-                    <option className="text-lg" value="client2">client 2</option>
-                    <option className="text-lg" value="client3">client 3</option>
-                  </select>
-                  <div className="relative z-10">
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
-                      onClick={handleDropdownClick} // Handle click on arrow image
-                    >
-                      <img
-                        className="h-[6.6px] w-[12.1px] relative cursor-pointer"
-                        alt=""
-                        src="/vector-8.svg"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              
 
             </div>
             <div className="flex flex-row items-end justify-start gap-[10px]">

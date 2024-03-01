@@ -2,6 +2,7 @@ import { FunctionComponent } from "react";
 import GroupComponent from "../components/GroupComponent";
 import RecruiterComponent from "../components/RecruiterComponent";
 import RulesComponent from "../components/RulesComponent";
+import ClientProfileComponent from "../components/ClientProfile";
 
 import { useState } from "react";
 
@@ -53,7 +54,7 @@ const RecruiterProfile: FunctionComponent = () => {
           </div>
           {/* Conditional rendering of components based on state */}
       {displayedComponent === 'recruiter' && <RecruiterComponent />}
-      {/* {displayedComponent === 'client' && <ClientComponent />} */}
+      {displayedComponent === 'client' && <ClientProfileComponent />}
       {displayedComponent === 'rules' && <RulesComponent />}
           
         </div>
