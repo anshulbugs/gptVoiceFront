@@ -16,7 +16,12 @@ import {
 import {
   getClients
 } from "../services/clients.services";
-
+import {
+  getRules
+} from "../services/rules.services";
+import {
+  getCompany
+} from "../services/company.services";
 import { CustomSpinner } from "../components/shared-components/Spinner";
 const JobCampaign: FunctionComponent = () => {
 
@@ -150,8 +155,8 @@ const JobCampaign: FunctionComponent = () => {
     [key: string]: string | string[];
   };
   const [campaignFormData, setFormData] = useState<any>({
-    LLM: 'Synthflow', RecruiterName: "Taj Haslani",
-    RecruiterPhoneNumber: "+1731123456",
+    LLM: 'Synthflow', RecruiterName: "Taj",
+    RecruiterPhoneNumber: "+17328001313",
     RecruiterEmail: "taj@aptask.com",
     Link: "abc.com",
     VoiceGender: "Male",
@@ -426,14 +431,7 @@ const JobCampaign: FunctionComponent = () => {
 
     return editedFormData;
   };
-  const [inputs, setInputs] = useState({
-    // Assuming these are your input fields
-    input1: '',
-    input2: '',
-    input3: '',
-    select1: '',
-    select2: '',
-  });
+
 
   const handleNewJobClick = () => {
     // Clear all input fields
@@ -443,7 +441,7 @@ const JobCampaign: FunctionComponent = () => {
   };
   const [callingDetails, setCallingDetails] = useState({
     RecruiterName: "Taj",
-    RecruiterPhoneNumber: "+1732800131",
+    RecruiterPhoneNumber: "+17328001313",
     RecruiterEmail: "taj@aptask.com",
     Link: "abc.com",
     VoiceGender: "Male",
@@ -478,6 +476,53 @@ const JobCampaign: FunctionComponent = () => {
   }
   useEffect(() => {
     gettingClients();
+  }, []);
+  const [rules, setRules] = useState<{ rule: string }[]>([
+    { rule: "" }
+  ]);
+  interface Rule {
+    id: string;
+    rule_text: string;
+  }
+  async function gettingRules() {
+    try {
+      
+      // Get rules
+      const rulesData = await getRules();
+      setIsSpinnerVisible(false);
+      const rules: Rule[] = rulesData.rules;
+      
+      
+      const formattedRules = rules.map((rule, index) => `${index + 1}. ${rule.rule_text}`).join('\n');
+
+        // setRules(formattedRules);
+        setFormData((prevData: any) => ({ ...prevData, ["rules"]: formattedRules }));
+
+    } catch (error) {
+      console.error('Error:', error);
+      
+    }
+  }
+  useEffect(() => {
+    gettingRules();
+
+  }, []);
+  async function gettingCompany() {
+    try {
+      
+      // Get rules
+      const companyData = await getCompany();
+      const companyDetails =companyData.companies[0].company_details 
+      setFormData((prevData: any) => ({ ...prevData, ["company_information"]: companyDetails }));
+
+    } catch (error) {
+      console.error('Error:', error);
+      
+    }
+  }
+  useEffect(() => {
+    gettingCompany();
+
   }, []);
   return (
     <div className="w-full relative bg-white overflow-hidden flex flex-col items-start justify-start pt-0 px-0 pb-[25px] box-border tracking-[normal]">

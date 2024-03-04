@@ -17,4 +17,8 @@ export const EDIT_RULES_API_URL = BASE_API_URL + "editRules";
 export const GET_CLIENTS_API_URL = BASE_API_URL + "getClients";
 export const EDIT_CLIENTS_API_URL = BASE_API_URL + "editClients";
 
+export const GET_COMPANY_API_URL = BASE_API_URL + "getCompanies";
+export const EDIT_COMPANY_API_URL = BASE_API_URL + "editCompany";
 
+export const GET_RECRUITER_API_URL = BASE_API_URL + "getRecruiters";
+export const EDIT_RECRUITER_API_URL = BASE_API_URL + "editRecruiter";
