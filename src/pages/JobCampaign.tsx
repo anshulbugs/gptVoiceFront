@@ -150,8 +150,8 @@ const JobCampaign: FunctionComponent = () => {
     [key: string]: string | string[];
   };
   const [campaignFormData, setFormData] = useState<any>({
-    LLM: 'Synthflow', RecruiterName: "Taj Haslani",
-    RecruiterPhoneNumber: "+1731123456",
+    LLM: 'Synthflow', RecruiterName: "Taj",
+    RecruiterPhoneNumber: "+17328001313",
     RecruiterEmail: "taj@aptask.com",
     Link: "abc.com",
     VoiceGender: "Male",
@@ -443,7 +443,7 @@ const JobCampaign: FunctionComponent = () => {
   };
   const [callingDetails, setCallingDetails] = useState({
     RecruiterName: "Taj",
-    RecruiterPhoneNumber: "+1732800131",
+    RecruiterPhoneNumber: "+17328001313",
     RecruiterEmail: "taj@aptask.com",
     Link: "abc.com",
     VoiceGender: "Male",
