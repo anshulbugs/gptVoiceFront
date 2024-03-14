@@ -826,6 +826,7 @@ const JobCampaign: FunctionComponent = () => {
                 >
                   <option value="" disabled selected hidden>Select LLM</option>
                   <option value="Synthflow" className="text-lg" selected>Synthflow</option>
+                  <option value="Vapi" className="text-lg">Vapi</option>
                   <option value="Vodex" className="text-lg">Vodex</option>
                   {/* <option value="Vocode" className="text-lg">VoCode</option> */}
 
